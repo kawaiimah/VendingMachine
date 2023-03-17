@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+  <head> </head>
+
+  <body style="text-align: center; font-size: 20px; width: 100%">
+    <h1>Vending Machine Helper</h1>
+
+    Credits Available ($):
+    <input id="bank" placeholder="E.g. 13.50" />
+    <br /><br />
+
+    Snack Prices of Interest:
+    <form>
+      <div style="display: flex; flex-direction: row; justify-content: center">
+        <label>
+          <input type="checkbox" name="prices[]" value="0.60" />
+          $0.60
+        </label>
+        <label style="margin-left: 20px">
+          <input type="checkbox" name="prices[]" value="0.70" />
+          $0.70
+        </label>
+        <label style="margin-left: 20px">
+          <input type="checkbox" name="prices[]" value="0.80" />
+          $0.80
+        </label>
+      </div>
+      <div style="display: flex; flex-direction: row; justify-content: center">
+        <label>
+          <input type="checkbox" name="prices[]" value="0.90" />
+          $0.90
+        </label>
+        <label style="margin-left: 20px">
+          <input type="checkbox" name="prices[]" value="1.00" />
+          $1.00
+        </label>
+        <label style="margin-left: 20px">
+          <input type="checkbox" name="prices[]" value="1.10" />
+          $1.10
+        </label>
+      </div>
+      <div style="display: flex; flex-direction: row; justify-content: center">
+        <label>
+          <input type="checkbox" name="prices[]" value="1.20" />
+          $1.20
+        </label>
+        <label style="margin-left: 20px">
+          <input type="checkbox" name="prices[]" value="1.40" />
+          $1.40
+        </label>
+        <label style="margin-left: 20px">
+          <input type="checkbox" name="prices[]" value="1.60" />
+          $1.60
+        </label>
+      </div>
+    </form>
+
+    <br />
+
+    <button onclick="combos()">Gimme Combos!</button>
+    <br />
+
+    <p id="combos"></p>
+
+    <script>
+      // combo with replacement function
+      function cwr(arr, len) {
+        const combinations = [];
+        function generate(start, combination) {
+          if (combination.length === len) {
+            combinations.push(combination);
+            return;
+          }
+          for (let i = start; i < arr.length; i++) {
+            generate(i, [...combination, arr[i]]);
+          }
+        }
+        generate(0, []);
+        return combinations;
+      }
+
+      function combos() {
+        // get bank
+        let bank_raw = parseFloat(document.getElementById("bank").value);
+        let bank = isNaN(bank_raw) ? 0 : Math.round(bank_raw * 10) / 10;
+
+        // get prices
+        let form = document.querySelector("form");
+        let prices = Array.from(form.elements["prices[]"])
+          .filter((prices) => prices.checked)
+          .map((prices) => prices.value);
+
+        // check cost of combos
+        let low = Math.floor(bank / Math.max(...prices));
+        let high = Math.floor(bank / Math.min(...prices));
+        let output = [];
+
+        for (let i = low; i <= high + 1; i++) {
+          let combinations = cwr(prices, i);
+          for (let j = 0; j < combinations.length; j++) {
+            let combination = combinations[j];
+            if (
+              combination.reduce(
+                (a, b) => Math.round((parseFloat(a) + parseFloat(b)) * 10) / 10,
+                0
+              ) === bank
+            ) {
+              output.push(combination);
+            }
+          }
+        }
+
+        // // prep output to string
+        // let results = "";
+        // if (output.length > 0) {
+        //   for (cmb of output) {
+        //     results += "$" + cmb.join(", $");
+        //     results += "<br>";
+        //   }
+        // } else {
+        //   results += "No combos found!";
+        // }
+
+        // prep output to string
+        let results = "";
+        if (output.length > 0) {
+          for (cmb of output) {
+            let temp = cmb[0];
+            let count = 0;
+            for (prc of cmb) {
+              if (temp != prc) {
+                results += count.toString() + " x " + "$" + temp + ", ";
+                temp = prc;
+                count = 1;
+              } else {
+                count += 1;
+              }
+            }
+            results += count.toString() + " x " + "$" + temp;
+            results += "<br>";
+          }
+        } else {
+          results += "No combos found!";
+        }
+
+        document.getElementById("combos").innerHTML = results;
+      }
+    </script>
+  </body>
+</html>
